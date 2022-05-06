@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "airbnb",
+    "prettier",
+    "plugin:node/recommended"
+  ],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "no-console": "warn",
+    "func-names": "off",
+    "no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "req|res|next|val" }
+    ],
+    "no-process-exit": "off",
+    "object-showhand": "off",
+    "spaced-comment": "off",
+    "class-methods-use-this": "off",
+    "consistent-return": "off",
+    "object-shorthand": "off",
+    "no-param-reassign": "off",
+    "no-return-await": "off",
+    "no-underscore-dangle": "off",
+    "prefer-destructuring": [
+      "error",
+      { "object": true, "array": false }
+    ]
+  }
+}
