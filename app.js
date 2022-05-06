@@ -7,7 +7,8 @@ const morgan = require('morgan');
 const mongoose = require('mongoose');
 const userRouter = require('./src/routers/userRouter');
 const ticketRouter = require('./src/routers/ticketRouter');
-const handleError = require('./src/utils/errorHandler');
+const globalErrorHandler = require('./src/utils/errorHandler');
+const AppError = require('./src/utils/appError');
 
 const app = express();
 
@@ -44,9 +45,11 @@ app.use((req, res, next) => {
   next(err);
 });
 
-app.use('*', (err, req, res, next) => {
-  handleError(err, res);
-});
+app.use('*', (req, res, next) =>
+  next(new AppError(`Can't find ${req.originalUrl} on this server`, 404))
+);
+
+app.use(globalErrorHandler);
 
 const port = process.env.PORT;
 

@@ -31,6 +31,7 @@ const UserSchema = new mongoose.Schema({
     minlength: 8,
     maxlength: 100,
     required: [true, 'A user must have a password'],
+    select: false,
   },
 });
 
@@ -40,6 +41,13 @@ UserSchema.pre('save', async function (req, res, next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
+UserSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', UserSchema);
 
