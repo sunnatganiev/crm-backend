@@ -1,6 +1,22 @@
+const jwt = require('jsonwebtoken');
+
 const User = require('../model/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+
+const createAccessJWT = async (payload) => {
+  const accessJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: '15m',
+  });
+  return accessJWT;
+};
+
+const createRefreshJWT = async (payload) => {
+  const refreshJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
+  return refreshJWT;
+};
 
 exports.createUser = catchAsync(async (req, res, next) => {
   const result = await User.create(req.body);
@@ -24,5 +40,15 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password, user.password)))
     return next(new AppError('Incorrect email or password', 401));
 
-  res.json({ status: 'success', message: 'login successfully!' });
+  const accessJWT = await createAccessJWT({ id: user._id });
+  const refreshJWT = await createRefreshJWT({ id: user._id });
+
+  res.status(201).json({
+    status: 'success',
+    accessJWT,
+    refreshJWT,
+    data: {
+      user,
+    },
+  });
 });
