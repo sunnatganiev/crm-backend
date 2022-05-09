@@ -3,19 +3,44 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const { setJWT, getJWT } = require('../utils/redis');
 
 const createAccessJWT = async (payload) => {
-  const accessJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '15m',
-  });
-  return accessJWT;
+  try {
+    const accessJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '15m',
+    });
+
+    await setJWT(accessJWT, `${payload.id}`);
+    return accessJWT;
+  } catch (error) {
+    return error;
+  }
+};
+
+const storeUserRefreshJWT = async (_id, token) => {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { _id },
+      { $set: { 'refreshJWT.token': token, 'refreshJWT.addedAt': Date.now() } },
+      { new: true }
+    );
+
+    return updatedUser;
+  } catch (error) {
+    return error;
+  }
 };
 
 const createRefreshJWT = async (payload) => {
-  const refreshJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '30d',
-  });
-  return refreshJWT;
+  try {
+    const refreshJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: '30d',
+    });
+    return await storeUserRefreshJWT(payload.id, refreshJWT);
+  } catch (error) {
+    return error;
+  }
 };
 
 exports.createUser = catchAsync(async (req, res, next) => {

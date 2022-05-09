@@ -33,6 +33,17 @@ const UserSchema = new mongoose.Schema({
     required: [true, 'A user must have a password'],
     select: false,
   },
+  refreshJWT: {
+    token: {
+      type: String,
+      default: '',
+    },
+    addedAt: {
+      type: Date,
+      required: true,
+      default: Date.now(),
+    },
+  },
 });
 
 UserSchema.pre('save', async function (req, res, next) {
