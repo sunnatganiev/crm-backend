@@ -1,10 +1,10 @@
+/* eslint-disable no-new */
 const client = require('redis').createClient(process.env.REDIS_URL);
 
 //redis://localhost:6379
 
 exports.setJWT = async (key, value) => {
   await client.connect();
-  // eslint-disable-next-line no-new
   new Promise((resolve, reject) => {
     try {
       client.set(key, value, (err, res) => {
@@ -17,14 +17,9 @@ exports.setJWT = async (key, value) => {
   });
 };
 
-exports.getJWT = async (key) =>
-  new Promise((resolve, reject) => {
-    try {
-      client.get(key, (err, res) => {
-        if (err) reject(err);
-        resolve(res);
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
+exports.getJWT = async (key) => await client.get(key);
+
+exports.deleteJWT = async (key) => {
+  await client.del(key);
+  console.log('token deleted');
+};

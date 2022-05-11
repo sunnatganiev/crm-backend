@@ -5,8 +5,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-const userRouter = require('./src/routers/userRouter');
-const ticketRouter = require('./src/routers/ticketRouter');
+const userRoutes = require('./src/routers/userRoutes');
+const ticketRoutes = require('./src/routers/ticketRoutes');
+const tokenRoutes = require('./src/routers/tokenRoutes');
 const globalErrorHandler = require('./src/utils/errorHandler');
 const AppError = require('./src/utils/appError');
 
@@ -36,8 +37,9 @@ app.use(bodyParser.json());
 
 // Routers
 
-app.use('/v1/users', userRouter);
-app.use('/v1/tickets', ticketRouter);
+app.use('/v1/users', userRoutes);
+app.use('/v1/tickets', ticketRoutes);
+app.use('/v1/token', tokenRoutes);
 
 app.use((req, res, next) => {
   const err = new Error('Resources not found');

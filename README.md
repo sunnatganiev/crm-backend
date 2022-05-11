@@ -18,10 +18,10 @@ All the user API router follews `/v1/user/`
 
 | #   | Routers                           | Verbs | Progress | Is Private | Description                                           |
 | --- | --------------------------------- | ----- | -------- | ---------- | ----------------------------------------------------- |
-| 1   | `/v1/user/login`                  | POST  | TODO     | No         | Verify user Authentication and return JWT             |
+| 1   | `/v1/user/login`                  | POST  | Done     | No         | Verify user Authentication and return JWT             |
 | 2   | `/v1/user/request-reset-password` | POST  | TODO     | No         | Verify email and send email pin to reset the password |
 | 3   | `/v1/user/reset-password`         | PUT   | TODO     | No         | Replace with new password                             |
-| 4   | `/v1/user/{id}`                   | GET   | TODO     | Yes        | Get users info                                        |
+| 4   | `/v1/user`                        | GET   | Done     | Yes        | Get users info                                        |
 
 ### Ticket API Resources
 
@@ -34,3 +34,11 @@ All the ticket API router follews `/v1/ticket/`
 | 3   | `/v1/ticket`                   | POST  | TODO     | Yes        | Create a new ticket                     |
 | 4   | `/v1/ticket/{id}`              | PUT   | TODO     | Yes        | Update ticket details ie. reply message |
 | 5   | `/v1/ticket/close-ticket/{id}` | PUT   | TODO     | Yes        | Update ticket details ie. reply message |
+
+### Tokens API Resources
+
+All the Tokens API router follows `/v1/tokens`
+
+| #   | Routers      | Verbs | Progress | Is Private | Description            |
+| --- | ------------ | ----- | -------- | ---------- | ---------------------- |
+| 1   | `/v1/tokens` | GET   | Done     | no         | Get a fresh access JWT |

@@ -3,12 +3,12 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-const { setJWT, getJWT } = require('../utils/redis');
+const { setJWT, getJWT, deleteJWT } = require('../utils/redis');
 
 const createAccessJWT = async (payload) => {
   try {
     const accessJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '15m',
+      expiresIn: '1m',
     });
 
     await setJWT(accessJWT, `${payload.id}`);
@@ -34,16 +34,17 @@ const storeUserRefreshJWT = async (_id, token) => {
 
 const createRefreshJWT = async (payload) => {
   try {
-    const refreshJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
+    const refreshJWT = await jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
       expiresIn: '30d',
     });
-    return await storeUserRefreshJWT(payload.id, refreshJWT);
+    await storeUserRefreshJWT(payload.id, refreshJWT);
+    return refreshJWT;
   } catch (error) {
     return error;
   }
 };
 
-exports.createUser = catchAsync(async (req, res, next) => {
+const createUser = catchAsync(async (req, res, next) => {
   const result = await User.create(req.body);
   res.status(201).json({
     message: 'New user created',
@@ -51,7 +52,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.login = catchAsync(async (req, res, next) => {
+const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // 1) Check if email and password exist
@@ -72,8 +73,44 @@ exports.login = catchAsync(async (req, res, next) => {
     status: 'success',
     accessJWT,
     refreshJWT,
-    data: {
-      user,
-    },
   });
 });
+
+const protect = catchAsync(async (req, res, next) => {
+  const { authorization } = req.headers;
+
+  if (!authorization)
+    return next(
+      new AppError('You are not logged in. Please login to get access', 401)
+    );
+
+  // 1. verifyif jwt is valid
+  const decoded = jwt.verify(authorization, process.env.JWT_SECRET);
+
+  // 2. check if jwt is exist in redis
+  if (!decoded.id) {
+    await deleteJWT(authorization);
+    return next(new AppError('Forbidden', 403));
+  }
+
+  const userId = await getJWT(authorization);
+
+  // 3) Check if user still exists
+  const currentUser = await User.findById(userId);
+
+  if (!currentUser) return next(new AppError('Forbidden', 403));
+
+  // 4. GRANT ACCESS TO PROTECTED ROUTE
+
+  req.user = currentUser;
+
+  next();
+});
+
+module.exports = {
+  protect,
+  createRefreshJWT,
+  createAccessJWT,
+  login,
+  createUser,
+};
