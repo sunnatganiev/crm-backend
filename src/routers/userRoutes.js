@@ -19,5 +19,6 @@ router
   .post(authController.createUser);
 
 router.post('/login', authController.login);
+router.delete('/logout', authController.protect, authController.logout);
 
 module.exports = router;

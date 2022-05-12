@@ -16,12 +16,14 @@ Note: Make sure you have nodemon is installed in your system otherwise you can i
 
 All the user API router follews `/v1/user/`
 
-| #   | Routers                   | Verbs | Progress | Is Private | Description                                           |
-| --- | ------------------------- | ----- | -------- | ---------- | ----------------------------------------------------- |
-| 1   | `/v1/user/login`          | POST  | Done     | No         | Verify user Authentication and return JWT             |
-| 2   | `/v1/user/reset-password` | POST  | TODO     | No         | Verify email and send email pin to reset the password |
-| 3   | `/v1/user/reset-password` | PATCH | TODO     | No         | Replace with new password                             |
-| 4   | `/v1/user`                | GET   | Done     | Yes        | Get users info                                        |
+| #   | Routers                   | Verbs  | Progress | Is Private | Description                                           |
+| --- | ------------------------- | ------ | -------- | ---------- | ----------------------------------------------------- |
+| 1   | `/v1/user/login`          | POST   | Done     | No         | Verify user Authentication and return JWT             |
+| 1   | `/v1/user/logout`         | DELETE | Done     | Yes        | Delete user accessJWT                                 |
+| 2   | `/v1/user/reset-password` | POST   | Done     | No         | Verify email and send email pin to reset the password |
+| 3   | `/v1/user/reset-password` | PATCH  | Done     | No         | Replace with new password                             |
+| 4   | `/v1/user`                | GET    | Done     | Yes        | Get users info                                        |
+| 4   | `/v1/user`                | POST   | Done     | No         | Create a user                                         |
 
 ### Ticket API Resources
 

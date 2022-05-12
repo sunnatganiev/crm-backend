@@ -9,7 +9,7 @@ const { setJWT, getJWT, deleteJWT } = require('../utils/redis');
 const createAccessJWT = async (payload) => {
   try {
     const accessJWT = await jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '1m',
+      expiresIn: '15m',
     });
 
     await setJWT(accessJWT, `${payload.id}`);
@@ -77,6 +77,23 @@ const login = catchAsync(async (req, res, next) => {
   });
 });
 
+const logout = catchAsync(async (req, res, next) => {
+  // 1. get jwt and verify
+  const { authorization } = req.headers;
+  if (!authorization) return next(new AppError('Forbidden', 403));
+
+  // 2. delete accessJWT from redis database
+  await deleteJWT(authorization);
+
+  // 3. delete refreshJWT from mongodb
+  await storeUserRefreshJWT(req.user._id, '');
+
+  res.status(201).json({
+    status: 'success',
+    message: 'You are logged out successfully',
+  });
+});
+
 const protect = catchAsync(async (req, res, next) => {
   const { authorization } = req.headers;
 
@@ -91,7 +108,7 @@ const protect = catchAsync(async (req, res, next) => {
   // 2. check if jwt is exist in redis
   if (!decoded.id) {
     await deleteJWT(authorization);
-    return next(new AppError('Forbidden', 403));
+    return next(new AppError('Forbidden line 111', 403));
   }
 
   const userId = await getJWT(authorization);
@@ -189,4 +206,5 @@ module.exports = {
   createUser,
   forgotPassword,
   resetPassword,
+  logout,
 };
