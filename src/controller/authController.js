@@ -69,7 +69,7 @@ const login = catchAsync(async (req, res, next) => {
 
   const accessJWT = await createAccessJWT({ id: user._id });
   const refreshJWT = await createRefreshJWT({ id: user._id });
-
+  console.log(accessJWT);
   res.status(201).json({
     status: 'success',
     accessJWT,
@@ -107,11 +107,6 @@ const protect = catchAsync(async (req, res, next) => {
 
   next();
 });
-
-// 5. send email notification
-
-// C. Server side form validation
-// 1. create middleware to validate form data
 
 const randomPin = () => {
   let pin = '';
