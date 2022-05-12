@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/userModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
+const sendMail = require('../utils/mail');
 const { setJWT, getJWT, deleteJWT } = require('../utils/redis');
 
 const createAccessJWT = async (payload) => {
@@ -107,20 +108,9 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-// 1. recieve email
-
-// 3. create unique 6 digit pin
-// 4. save pin and email in database
-// 5. email the pin
-
-// B. update Password in DB
-// 1. recieve email, pin and new Password
-// 2. validate pin
-// 3. encrypt new password
-// 4. update password in db
 // 5. send email notification
 
-// C. Server sid eform validation
+// C. Server side form validation
 // 1. create middleware to validate form data
 
 const randomPin = () => {
@@ -135,6 +125,10 @@ const randomPin = () => {
 };
 
 const forgotPassword = catchAsync(async (req, res, next) => {
+  // Create unique 6 digit pin
+  const pin = randomPin();
+
+  // Recieve email
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -143,14 +137,53 @@ const forgotPassword = catchAsync(async (req, res, next) => {
   if (!user)
     return next(new AppError('Email is not found! Please check email', 403));
 
-  // Create and send password reset pin number
+  // Send password reset pin number
+  const result = await sendMail(user, pin);
+
+  if (!result.messageId)
+    return next(
+      new AppError(
+        'Unable to process your request at the moment. Please try again later!'
+      )
+    );
+
+  // Save pin in database
   const updatedUser = await User.findOneAndUpdate(
     { email },
-    { resetPin: randomPin() },
+    {
+      resetPin: pin,
+      resetPinExp: Date.now() + 24 * 60 * 60 * 1000,
+    },
     { new: true }
   );
 
-  res.json(updatedUser);
+  res.status(201).json(updatedUser);
+});
+
+const resetPassword = catchAsync(async (req, res, next) => {
+  const { email, resetPin, newPassword } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user || resetPin !== user.resetPin || user.resetPinExp < Date.now())
+    return next(
+      new AppError(
+        'Email or reset pin is invalid. Please provide valid info',
+        403
+      )
+    );
+
+  user.password = newPassword;
+  user.resetPin = undefined;
+  user.resetPinExp = undefined;
+  await user.save();
+
+  await sendMail(user);
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Your password updated successfully',
+  });
 });
 
 module.exports = {
@@ -160,4 +193,5 @@ module.exports = {
   login,
   createUser,
   forgotPassword,
+  resetPassword,
 };

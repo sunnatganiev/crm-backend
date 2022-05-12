@@ -49,6 +49,7 @@ const UserSchema = new mongoose.Schema({
     maxlength: 6,
     minlength: 6,
   },
+  resetPinExp: Date,
 });
 
 UserSchema.pre('save', async function (req, res, next) {

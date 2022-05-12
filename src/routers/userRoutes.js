@@ -4,7 +4,10 @@ const userController = require('../controller/userController');
 
 const router = express.Router();
 
-router.route('/reset-password').post(authController.forgotPassword);
+router
+  .route('/reset-password')
+  .post(authController.forgotPassword)
+  .patch(authController.resetPassword);
 
 router
   .route('/')
