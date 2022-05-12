@@ -4,7 +4,8 @@ const userController = require('../controller/userController');
 
 const router = express.Router();
 
-// Get user profile router
+router.route('/reset-password').post(authController.forgotPassword);
+
 router
   .route('/')
   .get(authController.protect, userController.getUser)

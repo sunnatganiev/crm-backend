@@ -107,10 +107,57 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
+// 1. recieve email
+
+// 3. create unique 6 digit pin
+// 4. save pin and email in database
+// 5. email the pin
+
+// B. update Password in DB
+// 1. recieve email, pin and new Password
+// 2. validate pin
+// 3. encrypt new password
+// 4. update password in db
+// 5. send email notification
+
+// C. Server sid eform validation
+// 1. create middleware to validate form data
+
+const randomPin = () => {
+  let pin = '';
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < 6; i++) {
+    pin += Math.trunc(Math.random() * 10);
+  }
+
+  return pin;
+};
+
+const forgotPassword = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  // Check if user ixist for the email
+  if (!user)
+    return next(new AppError('Email is not found! Please check email', 403));
+
+  // Create and send password reset pin number
+  const updatedUser = await User.findOneAndUpdate(
+    { email },
+    { resetPin: randomPin() },
+    { new: true }
+  );
+
+  res.json(updatedUser);
+});
+
 module.exports = {
   protect,
   createRefreshJWT,
   createAccessJWT,
   login,
   createUser,
+  forgotPassword,
 };
